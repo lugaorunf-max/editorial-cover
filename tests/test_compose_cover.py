@@ -30,7 +30,7 @@ class CompositionTests(unittest.TestCase):
                 result = Image.open(output)
                 self.assertEqual(result.size, (1880,800))
                 self.assertEqual(Image.open(plain).convert('RGB').tobytes(), Image.open(self.source).tobytes())
-                # All four source edge markers survive inside the opening.
+                # Visible source edge markers remain after cover cropping.
                 self.assertGreater(sum(1 for r,g,b,a in result.getdata() if r>230 and g<40 and b<40), 1000)
                 border = ImageOps.contain(Image.open(ROOT/'assets/borders'/filename).convert('RGBA'), (1880,800), Image.Resampling.LANCZOS)
                 overlay = Image.new('RGBA',(1880,800))
@@ -44,6 +44,27 @@ class CompositionTests(unittest.TestCase):
                 # Completely opaque frame and badge pixels are unchanged.
                 opaque = overlay.getchannel('A').point(lambda value:255 if value==255 else 0)
                 self.assertEqual(Image.composite(result, overlay, opaque).tobytes(), overlay.tobytes())
+
+    def test_default_fills_opening_without_added_side_bands(self):
+        # A contrasting center and background reveal any newly introduced padding.
+        image = Image.new('RGB', (1880,800), '#1234ab')
+        ImageDraw.Draw(image).rectangle((0,0,1879,799), outline='#eee1cd', width=1)
+        image.save(self.source)
+        for name, filename in m.BORDERS.items():
+            output = self.directory/(name+'-filled.png')
+            m.compose(self.source, output, border=name)
+            result = Image.open(output)
+            border = ImageOps.contain(Image.open(ROOT/'assets/borders'/filename).convert('RGBA'), (1880,800), Image.Resampling.LANCZOS)
+            overlay = Image.new('RGBA',(1880,800))
+            overlay.alpha_composite(border, ((1880-border.width)//2,(800-border.height)//2))
+            mask, box = m.border_opening(overlay)
+            left, top, right, bottom = box
+            expected = Image.new('RGBA',(1880,800),'#1234ab')
+            expected.alpha_composite(overlay)
+            for x in (left+10, right-11):
+                point = (x, (top+bottom)//2)
+                self.assertEqual(mask.getpixel(point), 255)
+                self.assertEqual(result.getpixel(point), expected.getpixel(point))
 
     def test_rejects_overwrite_before_writing_either_output(self):
         output = self.directory/'output.png'

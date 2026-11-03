@@ -2,7 +2,7 @@
 """Normalize a generated cover, then optionally composite an original border."""
 import argparse
 from pathlib import Path
-from PIL import Image, ImageOps, ImageDraw, ImageFilter
+from PIL import Image, ImageOps, ImageDraw
 from statistics import median
 
 BORDERS = {
@@ -36,40 +36,6 @@ def border_opening(overlay):
     if not box or box[0] == 0 or box[1] == 0 or box[2] == overlay.width or box[3] == overlay.height:
         raise ValueError('Border has no enclosed opening')
     return mask, box
-
-
-def safe_content_box(mask, image_size):
-    """Find a rectangle inside the opening, clear of badges and corner ornaments."""
-    small = mask.resize((max(1, mask.width//8), max(1, mask.height//8)), Image.Resampling.BOX)
-    small = small.point(lambda value: 255 if value == 255 else 0).filter(ImageFilter.MinFilter(3))
-    heights = [0] * (small.width + 1)
-    best_score, best = -1, None
-    for y in range(small.height):
-        for x in range(small.width):
-            heights[x] = heights[x]+1 if small.getpixel((x,y)) else 0
-        stack = []
-        for x in range(small.width+1):
-            start = x
-            while stack and stack[-1][1] > heights[x]:
-                left, height = stack.pop()
-                half_width = min(small.width/2-left, x-small.width/2)
-                if half_width <= 0:
-                    start = left
-                    continue
-                centered_left = int(small.width/2-half_width)
-                centered_right = int(small.width/2+half_width)
-                scale = min((centered_right-centered_left)*mask.width/small.width/image_size[0],
-                            height*mask.height/small.height/image_size[1])
-                if scale > best_score:
-                    best_score = scale
-                    best = (centered_left, y-height+1, centered_right, y+1)
-                start = left
-            if not stack or stack[-1][1] < heights[x]:
-                stack.append((start, heights[x]))
-    if best is None:
-        raise ValueError('Border opening is too small')
-    return tuple(round(v * (mask.width/small.width if i%2 == 0 else mask.height/small.height))
-                 for i,v in enumerate(best))
 
 
 def fit_image(image, size, fit, background, focus_x, focus_y):
@@ -112,17 +78,12 @@ def compose(source, output, width=1880, height=800, border=None,
             resized = ImageOps.contain(original.convert('RGBA'), (width, height), Image.Resampling.LANCZOS)
         overlay = Image.new('RGBA', (width, height))
         overlay.alpha_composite(resized, ((width-resized.width)//2, (height-resized.height)//2))
-        mask, _ = border_opening(overlay)
-        box = safe_content_box(mask, image.size)
-        # Keep artwork off the antialiased inner edge; original border pixels stay intact.
-        padding = max(2, round(min(width, height) * 0.01))
+        mask, box = border_opening(overlay)
         left, top, right, bottom = box
-        inner_size = (right-left-2*padding, bottom-top-2*padding)
-        if min(inner_size) <= 0:
-            raise ValueError('Output too small for border opening')
-        fitted = fit_image(image, inner_size, fit or 'contain', background, focus_x, focus_y)
+        inner_size = (right-left, bottom-top)
+        fitted = fit_image(image, inner_size, fit or 'cover', background, focus_x, focus_y)
         artwork = Image.new('RGBA', (width, height), background)
-        artwork.alpha_composite(fitted, (left+padding, top+padding))
+        artwork.alpha_composite(fitted, (left, top))
         canvas = Image.new('RGBA', (width, height), background)
         canvas.paste(artwork, (0, 0), mask)
         canvas.alpha_composite(overlay)
@@ -142,7 +103,7 @@ def main():
     parser.add_argument('--border', choices=BORDERS)
     parser.add_argument('--width', type=int, default=1880)
     parser.add_argument('--height', type=int, default=800)
-    parser.add_argument('--fit', choices=('cover', 'contain'), help='Default: contain inside a border, cover without a border')
+    parser.add_argument('--fit', choices=('cover', 'contain'), help='Default: cover, filling the entire border opening')
     parser.add_argument('--plain-output', type=Path, help='Also save a normalized borderless copy in the same run')
     parser.add_argument('--focus-x', type=float, default=0.5)
     parser.add_argument('--focus-y', type=float, default=0.5)
