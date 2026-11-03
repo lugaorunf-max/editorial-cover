@@ -109,7 +109,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--border', choices=[*BORDERS, 'none'], default='news-handdrawn', help='Default: selected B border; none: borderless output')
+    parser.add_argument('--border', choices=[*BORDERS, 'none'], default='news-handdrawn', help='Default: selected upper-left badge border; none: borderless output')
     parser.add_argument('--width', type=int, default=1880)
     parser.add_argument('--height', type=int, default=800)
     parser.add_argument('--fit', choices=('cover', 'contain'), help='Default: cover, filling the entire border opening')

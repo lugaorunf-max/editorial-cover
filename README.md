@@ -1,6 +1,6 @@
 # 手绘公众号封面生成 Skill
 
-根据文章标题和正文生成手绘社论漫画风微信公众号封面，自动加上 **B 版边框**，标识位于左上角框内。最终输出严格 **2.35:1**。
+根据文章标题和正文生成手绘社论漫画风微信公众号封面，自动加上 **新版边框**，标识位于左上角框线处。最终输出严格 **2.35:1**。
 
 ## 使用
 
@@ -14,7 +14,7 @@
 文章正文：……
 ```
 
-需要运行环境具备图像生成能力。本仓库提供逐字保留的手绘提示词、调用流程、B 版透明边框及合成脚本。
+需要运行环境具备图像生成能力。本仓库提供逐字保留的手绘提示词、调用流程、新版透明边框及合成脚本。
 
 ## 边框合成
 
@@ -27,7 +27,7 @@ pip install -r scripts/requirements.txt
 python3 scripts/compose_cover.py --input generated.png --output cover-bordered.png --plain-output cover.png
 ```
 
-脚本默认使用 B 版边框，等比铺满框内，裁切超出部分，外侧收紧至约 3 像素保护边。生图时为左上角标识预留背景，避免遮挡主体。
+脚本默认使用 新版边框，等比铺满框内，裁切超出部分，外侧收紧至约 3 像素保护边。生图时为左上角标识预留背景，避免遮挡主体。
 
 默认输出 1880×800 PNG，保留原图，已有输出文件不会被覆盖。明确需要无边框时使用 `--border none`；接受留白、希望完整保留原图时使用 `--fit contain`。`--focus-x`、`--focus-y` 控制裁切中心，取值 0 到 1。
 
@@ -35,7 +35,7 @@ python3 scripts/compose_cover.py --input generated.png --output cover-bordered.p
 
 - `SKILL.md`：Skill 调用说明。
 - `references/`：手绘风原始 Word、逐字提取的提示词和校验值。
-- `assets/borders/`：唯一的 B 版透明边框。
+- `assets/borders/`：唯一的新版透明边框。
 - `scripts/`：图片适配与边框叠加脚本。
 - `agents/`：Skill 显示信息。
 - `tests/`：合成行为验证。
