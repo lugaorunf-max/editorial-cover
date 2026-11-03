@@ -3,10 +3,5 @@
     "docx_sha256": "4e0fa68f8f941d698c4e30a5a35776e30628b7dfea41be846c0ec0087f586d24",
     "text_sha256": "23d7edce1910a9561714ca7e758337c3bf3b3373660f07a91f6a90e01ba6f1be",
     "paragraphs": 95
-  },
-  "写实风.docx": {
-    "docx_sha256": "9b6b58968a912faeff5c12a94dd1da89ea144d60c73ed000515fec38db36e2db",
-    "text_sha256": "050465d17b1508989860bb2dce7cc2211b711556f211fada67b6461159b0986d",
-    "paragraphs": 40
   }
 }

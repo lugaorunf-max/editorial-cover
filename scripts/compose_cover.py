@@ -7,8 +7,6 @@ from statistics import median
 
 BORDERS = {
     'news-handdrawn': '资讯类文章（手绘边框）.png',
-    'news-minimal': '资讯类文章（极简边框）.png',
-    'review': '实测类文章边框.png',
 }
 
 
@@ -63,7 +61,7 @@ def fit_image(image, size, fit, background, focus_x, focus_y):
     return canvas
 
 
-def compose(source, output, width=1880, height=800, border=None,
+def compose(source, output, width=1880, height=800, border='news-handdrawn',
             fit=None, focus_x=0.5, focus_y=0.5, plain_output=None):
     source, output = Path(source), Path(output)
     if width <= 0 or height <= 0 or width * 20 != height * 47:
@@ -111,7 +109,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--border', choices=BORDERS)
+    parser.add_argument('--border', choices=[*BORDERS, 'none'], default='news-handdrawn', help='Default: selected B border; none: borderless output')
     parser.add_argument('--width', type=int, default=1880)
     parser.add_argument('--height', type=int, default=800)
     parser.add_argument('--fit', choices=('cover', 'contain'), help='Default: cover, filling the entire border opening')
@@ -121,7 +119,7 @@ def main():
     args = parser.parse_args()
     try:
         result = compose(args.input, args.output, args.width, args.height,
-                         args.border, args.fit, args.focus_x, args.focus_y, args.plain_output)
+                         None if args.border == 'none' else args.border, args.fit, args.focus_x, args.focus_y, args.plain_output)
     except (ValueError, OSError) as error:
         parser.exit(2, f'Error: {error}\n')
     print(result)

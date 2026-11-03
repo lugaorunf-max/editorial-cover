@@ -76,7 +76,7 @@ class CompositionTests(unittest.TestCase):
     def test_rejects_overwrite_before_writing_either_output(self):
         output = self.directory/'output.png'
         with self.assertRaises(ValueError):
-            m.compose(self.source, output, border='review', plain_output=self.source)
+            m.compose(self.source, output, border='news-handdrawn', plain_output=self.source)
         self.assertFalse(output.exists())
         with self.assertRaises(ValueError):
             m.compose(self.source, output, plain_output=output)

@@ -1,27 +1,20 @@
-# 公众号封面生成 Skill
+# 手绘公众号封面生成 Skill
 
-根据文章标题和正文生成微信公众号封面，提供手绘社论漫画、电影级写实科技两种风格，输出比例为 **2.35:1**。
+根据文章标题和正文生成手绘社论漫画风微信公众号封面，自动加上 **B 版边框**，标识位于左上角框内。最终输出严格 **2.35:1**。
 
 ## 使用
 
 将本仓库下载为 `editorial-cover` 文件夹，放入 Codex 的 `~/.codex/skills/`，在新聊天中调用 `$editorial-cover`。
 
-提供文章标题、正文与风格；写实风还可提供希望显示在封面上的文字。未提供封面文字时默认无字。需要边框时，指定资讯手绘、资讯极简或实测边框。
+提供标题和正文即可，Skill 会连续完成生图、框内适配与加框，同时保留无边框版。
 
 ```text
-使用 $editorial-cover 生成手绘风封面，添加资讯手绘边框。
+使用 $editorial-cover 生成封面。
 文章标题：……
 文章正文：……
 ```
 
-```text
-使用 $editorial-cover 生成写实风封面。
-封面文字：……
-文章标题：……
-文章正文：……
-```
-
-图片由运行环境的图像生成能力制作；本仓库提供风格提示词、调用流程与边框合成脚本。需要可用的图像生成工具。
+需要运行环境具备图像生成能力。本仓库提供逐字保留的手绘提示词、调用流程、B 版透明边框及合成脚本。
 
 ## 边框合成
 
@@ -31,25 +24,22 @@
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r scripts/requirements.txt
-python3 scripts/compose_cover.py --input generated.png --border news-handdrawn --output cover-bordered.png --plain-output cover.png
+python3 scripts/compose_cover.py --input generated.png --output cover-bordered.png --plain-output cover.png
 ```
 
-一次调用 Skill 即自动连续完成生图、框内适配与加框，无需再次发出加框指令。脚本也只需运行一次，同时保存无边框与加框版。
+脚本默认使用 B 版边框，等比铺满框内，裁切超出部分，外侧收紧至约 3 像素保护边。生图时为左上角标识预留背景，避免遮挡主体。
 
-加框时自动识别各款边框内部开口，默认等比铺满整个框内开口，裁切超出部分，不额外添加内边距；框外使用协调底色，避免主体越过边框。边框外侧自动收紧至约 3 像素保护边，保留标识轮廓和原始素材。资讯手绘边框采用已选定的 B 版，标识位于左上角框内。生图时在对应标识位置预留背景，主体保持在安全区域。只有明确接受留白并希望保留整张原图时使用 `--fit contain`。
-
-可用边框参数为 `news-handdrawn`、`news-minimal`、`review`。默认输出 1880×800 PNG，保留原图，已有输出文件不会被覆盖。
+默认输出 1880×800 PNG，保留原图，已有输出文件不会被覆盖。明确需要无边框时使用 `--border none`；接受留白、希望完整保留原图时使用 `--fit contain`。`--focus-x`、`--focus-y` 控制裁切中心，取值 0 到 1。
 
 ## 文件
 
 - `SKILL.md`：Skill 调用说明。
-- `references/`：两份原始 Word、逐字提取的提示词和校验值。
-- `assets/borders/`：三款原始透明边框。
-- `scripts/`：图片比例规范与边框叠加脚本。
+- `references/`：手绘风原始 Word、逐字提取的提示词和校验值。
+- `assets/borders/`：唯一的 B 版透明边框。
+- `scripts/`：图片适配与边框叠加脚本。
 - `agents/`：Skill 显示信息。
+- `tests/`：合成行为验证。
 - `gallery/`：手绘风作品展示。
-
-原始提示词完整保留；本次文章内容及可选封面文字在调用时另行附加。
 
 ## 手绘风作品展示
 
