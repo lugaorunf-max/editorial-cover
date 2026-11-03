@@ -34,7 +34,7 @@ class CompositionTests(unittest.TestCase):
                 self.assertGreater(sum(1 for r,g,b,a in result.getdata() if r>230 and g<40 and b<40), 1000)
                 overlay = m.prepare_border(Image.open(ROOT/'assets/borders'/filename),1880,800)
                 mask, box = m.border_opening(overlay)
-                expected = Image.new('RGBA',(1880,800),m.background_color(Image.open(self.source)))
+                expected = Image.new('RGBA',(1880,800),'white')
                 expected.alpha_composite(overlay)
                 # No artwork outside the inner opening, including transparent outer margins.
                 exterior = mask.point(lambda value:255-value)
@@ -61,6 +61,24 @@ class CompositionTests(unittest.TestCase):
                 point = (x, (top+bottom)//2)
                 self.assertEqual(mask.getpixel(point), 255)
                 self.assertEqual(result.getpixel(point), expected.getpixel(point))
+
+    def test_colored_artwork_leaves_transparent_exterior_white(self):
+        for color in ('#ed2b7b', '#2266cc', '#1f8a49'):
+            Image.new('RGB',(1880,800),color).save(self.source)
+            output = self.directory/(color[1:]+'.png')
+            m.compose(self.source,output)
+            result = Image.open(output)
+            overlay = m.prepare_border(Image.open(ROOT/'assets/borders'/m.BORDERS['news-handdrawn']),1880,800)
+            mask, _ = m.border_opening(overlay)
+            # Transparent pixels outside the frame must be exactly white.
+            count = 0
+            for y in range(0,800,7):
+                for x in range(0,1880,7):
+                    if mask.getpixel((x,y)) == 0 and overlay.getpixel((x,y))[3] == 0:
+                        self.assertEqual(result.getpixel((x,y)),(255,255,255,255))
+                        count += 1
+            self.assertGreater(count,100)
+            self.assertEqual(result.getpixel((940,400)),Image.new('RGBA',(1,1),color).getpixel((0,0)))
 
     def test_outer_margins_are_tight_without_losing_badge(self):
         for filename in m.BORDERS.values():

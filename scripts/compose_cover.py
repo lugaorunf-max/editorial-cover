@@ -93,7 +93,8 @@ def compose(source, output, width=1880, height=800, border='news-handdrawn',
         fitted = fit_image(image, inner_size, fit or 'cover', background, focus_x, focus_y)
         artwork = Image.new('RGBA', (width, height), background)
         artwork.alpha_composite(fitted, (left, top))
-        canvas = Image.new('RGBA', (width, height), background)
+        # Keep the frame exterior white, independent of artwork colors.
+        canvas = Image.new('RGBA', (width, height), 'white')
         canvas.paste(artwork, (0, 0), mask)
         canvas.alpha_composite(overlay)
     if plain_output:
