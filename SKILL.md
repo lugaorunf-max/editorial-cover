@@ -48,6 +48,6 @@ python3 "<skill目录>/scripts/compose_cover.py" --input "<原始生图>" --bord
 | news-minimal | 资讯类文章（极简边框）.png |
 | review | 实测类文章边框.png |
 
-依赖 Python 3 与 Pillow；缺少 Pillow 时在独立虚拟环境安装 `scripts/requirements.txt`。边框整体等比缩放并居中，保留透明度和完整外缘。三款边框分别识别其内部开口，适配不同装饰占用区域。可用 `--width 2350 --height 1000` 指定其他严格 2.35:1 尺寸。
+依赖 Python 3 与 Pillow；缺少 Pillow 时在独立虚拟环境安装 `scripts/requirements.txt`。边框先按主体透明度轮廓收紧外侧空白，只保留约 3 像素的保护边，再适配最终画布，保留透明度及标识轮廓。原始 PNG 保持不变。三款边框分别识别其内部开口，适配不同装饰占用区域。可用 `--width 2350 --height 1000` 指定其他严格 2.35:1 尺寸。
 
 检查最终图的主题、文字准确性、比例和边框完整性，再展示图片并提供本地文件链接。加框时交付无边框版与加框版；未要求加框时交付无边框版。

@@ -32,9 +32,7 @@ class CompositionTests(unittest.TestCase):
                 self.assertEqual(Image.open(plain).convert('RGB').tobytes(), Image.open(self.source).tobytes())
                 # Visible source edge markers remain after cover cropping.
                 self.assertGreater(sum(1 for r,g,b,a in result.getdata() if r>230 and g<40 and b<40), 1000)
-                border = ImageOps.contain(Image.open(ROOT/'assets/borders'/filename).convert('RGBA'), (1880,800), Image.Resampling.LANCZOS)
-                overlay = Image.new('RGBA',(1880,800))
-                overlay.alpha_composite(border, ((1880-border.width)//2,(800-border.height)//2))
+                overlay = m.prepare_border(Image.open(ROOT/'assets/borders'/filename),1880,800)
                 mask, box = m.border_opening(overlay)
                 expected = Image.new('RGBA',(1880,800),m.background_color(Image.open(self.source)))
                 expected.alpha_composite(overlay)
@@ -54,9 +52,7 @@ class CompositionTests(unittest.TestCase):
             output = self.directory/(name+'-filled.png')
             m.compose(self.source, output, border=name)
             result = Image.open(output)
-            border = ImageOps.contain(Image.open(ROOT/'assets/borders'/filename).convert('RGBA'), (1880,800), Image.Resampling.LANCZOS)
-            overlay = Image.new('RGBA',(1880,800))
-            overlay.alpha_composite(border, ((1880-border.width)//2,(800-border.height)//2))
+            overlay = m.prepare_border(Image.open(ROOT/'assets/borders'/filename),1880,800)
             mask, box = m.border_opening(overlay)
             left, top, right, bottom = box
             expected = Image.new('RGBA',(1880,800),'#1234ab')
@@ -65,6 +61,17 @@ class CompositionTests(unittest.TestCase):
                 point = (x, (top+bottom)//2)
                 self.assertEqual(mask.getpixel(point), 255)
                 self.assertEqual(result.getpixel(point), expected.getpixel(point))
+
+    def test_outer_margins_are_tight_without_losing_badge(self):
+        for filename in m.BORDERS.values():
+            original = Image.open(ROOT/'assets/borders'/filename)
+            overlay = m.prepare_border(original,1880,800)
+            bounds = overlay.getchannel('A').point(lambda value:255 if value>=128 else 0).getbbox()
+            self.assertEqual(overlay.size,(1880,800))
+            self.assertLessEqual(bounds[0],6)
+            self.assertLessEqual(bounds[1],6)
+            self.assertLessEqual(1880-bounds[2],6)
+            self.assertLessEqual(800-bounds[3],6)
 
     def test_rejects_overwrite_before_writing_either_output(self):
         output = self.directory/'output.png'

@@ -24,6 +24,19 @@ def background_color(image):
     return tuple(round(median(c)) for c in zip(*samples)) + (255,)
 
 
+def prepare_border(original, width, height):
+    """Trim faint outer margins, retaining the opaque frame and badge silhouette."""
+    original = original.convert('RGBA')
+    bounds = original.getchannel('A').point(lambda value:255 if value >= 128 else 0).getbbox()
+    if bounds is None:
+        raise ValueError('Border is empty')
+    padding = max(2, round(min(original.size) * 0.004))
+    left, top, right, bottom = bounds
+    crop = (max(0,left-padding), max(0,top-padding),
+            min(original.width,right+padding), min(original.height,bottom+padding))
+    return original.crop(crop).resize((width,height), Image.Resampling.LANCZOS)
+
+
 def border_opening(overlay):
     """Select the enclosed transparent opening, excluding the outer margin."""
     regions = overlay.getchannel('A').point(lambda x: 255 if x >= 128 else 0)
@@ -75,9 +88,7 @@ def compose(source, output, width=1880, height=800, border=None,
     if border:
         border_path = Path(__file__).resolve().parents[1] / 'assets' / 'borders' / BORDERS[border]
         with Image.open(border_path) as original:
-            resized = ImageOps.contain(original.convert('RGBA'), (width, height), Image.Resampling.LANCZOS)
-        overlay = Image.new('RGBA', (width, height))
-        overlay.alpha_composite(resized, ((width-resized.width)//2, (height-resized.height)//2))
+            overlay = prepare_border(original, width, height)
         mask, box = border_opening(overlay)
         left, top, right, bottom = box
         inner_size = (right-left, bottom-top)
