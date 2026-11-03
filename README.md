@@ -31,9 +31,12 @@
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r scripts/requirements.txt
-python3 scripts/compose_cover.py --input generated.png --output cover.png
-python3 scripts/compose_cover.py --input cover.png --border news-handdrawn --output cover-bordered.png
+python3 scripts/compose_cover.py --input generated.png --border news-handdrawn --output cover-bordered.png --plain-output cover.png
 ```
+
+一次调用 Skill 即自动连续完成生图、框内适配与加框，无需再次发出加框指令。脚本也只需运行一次，同时保存无边框与加框版。
+
+加框时自动识别各款边框内部开口，默认完整缩放画面，框外使用协调底色，避免主体越过边框。需要铺满框内时可用 `--fit cover`，此时会产生裁切。
 
 可用边框参数为 `news-handdrawn`、`news-minimal`、`review`。默认输出 1880×800 PNG，保留原图，已有输出文件不会被覆盖。
 
