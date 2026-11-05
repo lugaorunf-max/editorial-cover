@@ -80,16 +80,16 @@ class CompositionTests(unittest.TestCase):
             self.assertGreater(count,100)
             self.assertEqual(result.getpixel((940,400)),Image.new('RGBA',(1,1),color).getpixel((0,0)))
 
-    def test_outer_margins_are_tight_without_losing_badge(self):
+    def test_border_asset_is_used_without_cropping_or_pixel_edits(self):
         for filename in m.BORDERS.values():
-            original = Image.open(ROOT/'assets/borders'/filename)
-            overlay = m.prepare_border(original,1880,800)
-            bounds = overlay.getchannel('A').point(lambda value:255 if value>=128 else 0).getbbox()
-            self.assertEqual(overlay.size,(1880,800))
-            self.assertLessEqual(bounds[0],6)
-            self.assertLessEqual(bounds[1],6)
-            self.assertLessEqual(1880-bounds[2],6)
-            self.assertLessEqual(800-bounds[3],6)
+            original = Image.open(ROOT/'assets/borders'/filename).convert('RGBA')
+            self.assertEqual(original.size,(1880,800))
+            self.assertEqual(m.prepare_border(original,1880,800).tobytes(),original.tobytes())
+            # A deliberately asymmetric transparent margin must survive resizing.
+            sample = Image.new('RGBA',(47,20))
+            ImageDraw.Draw(sample).rectangle((6,3,45,18),fill='green')
+            expected = sample.resize((1880,800),Image.Resampling.LANCZOS)
+            self.assertEqual(m.prepare_border(sample,1880,800).tobytes(),expected.tobytes())
 
     def test_rejects_overwrite_before_writing_either_output(self):
         output = self.directory/'output.png'

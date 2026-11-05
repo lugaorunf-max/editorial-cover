@@ -23,16 +23,11 @@ def background_color(image):
 
 
 def prepare_border(original, width, height):
-    """Trim faint outer margins, retaining the opaque frame and badge silhouette."""
+    """Resize the entire approved asset; never trim, crop, or add padding."""
     original = original.convert('RGBA')
-    bounds = original.getchannel('A').point(lambda value:255 if value >= 128 else 0).getbbox()
-    if bounds is None:
-        raise ValueError('Border is empty')
-    padding = max(2, round(min(original.size) * 0.004))
-    left, top, right, bottom = bounds
-    crop = (max(0,left-padding), max(0,top-padding),
-            min(original.width,right+padding), min(original.height,bottom+padding))
-    return original.crop(crop).resize((width,height), Image.Resampling.LANCZOS)
+    if original.size == (width, height):
+        return original.copy()
+    return original.resize((width, height), Image.Resampling.LANCZOS)
 
 
 def border_opening(overlay):
