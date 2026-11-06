@@ -27,7 +27,7 @@ pip install -r scripts/requirements.txt
 python3 scripts/compose_cover.py --input generated.png --output cover-bordered.png --plain-output cover.png
 ```
 
-脚本默认使用 新版边框，等比铺满框内，裁切超出部分，边框资产采用用户确认的“边框成图v2”，仅整图拉伸至 1880×800，使用时不裁切、收边或补边。边框外侧固定为纯白色（#FFFFFF），框内保留插画原有背景颜色。生图时为右上角标识预留背景，避免遮挡主体。
+脚本默认使用 新版边框，等比铺满框内，裁切超出部分，边框资产采用用户于 2026-11-06 提供的定稿透明 PNG，原文件为 1880×800，原样使用，使用时不裁切、收边或补边。边框外侧固定为纯白色（#FFFFFF），框内保留插画原有背景颜色。生图时为右上角标识预留背景，避免遮挡主体。
 
 默认输出 1880×800 PNG，保留原图，已有输出文件不会被覆盖。明确需要无边框时使用 `--border none`；接受留白、希望完整保留原图时使用 `--fit contain`。`--focus-x`、`--focus-y` 控制裁切中心，取值 0 到 1。
 
